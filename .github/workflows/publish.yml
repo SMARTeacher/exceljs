@@ -33,6 +33,14 @@ jobs:
       - name: install dependencies
         run: npm ci
 
+      - name: Build package
+        run: npm run build
+
+      - name: Clean dist folder
+        run: |
+          cd dist
+          find . -type f ! -name "exceljs.min.js" -delete
+
       - name: Get package version
         id: package-version
         run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
