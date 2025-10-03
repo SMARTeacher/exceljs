@@ -9,7 +9,7 @@ on:
     branches:
       - master
 jobs:
-  release:
+  publish:
     if: github.event_name == 'push' || (github.event.pull_request.merged == true)
     runs-on:
       - default
