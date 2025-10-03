@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+jobs:
+  release:
+    if: github.event_name == 'push' || (github.event.pull_request.merged == true)
+    runs-on:
+      - default
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Login CodeArtifact
+        uses: SMARTeacher/github-actions/codeartifact-login@master
+        with:
+          repository: release
+          role-arn: arn:aws:iam::471112755134:role/github-actions/github-oidc-prodigy-exceljs
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: install dependencies
+        run: npm ci
+
+      - name: Build package
+        run: npm run build
+
+      - name: Clean dist folder
+        run: |
+          cd dist
+          find . -type f ! -name "exceljs.min.js" -delete
+
+      - name: Get package version
+        id: package-version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Publish to CodeArtifact
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm publish
+
+      - name: Adding markdown summary
+        run: |
+          echo "## Release Summary 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "Published version: ${{ steps.package-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "npm install --save-dev @prodigy/exceljs@${{ steps.package-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
