@@ -1,16 +1,11 @@
-name: Release
+name: Publish Package
 
 on:
   push:
     branches:
-      - main
-  pull_request:
-    types: [closed]
-    branches:
-      - main
+      - master
 jobs:
-  release:
-    if: github.event_name == 'push' || (github.event.pull_request.merged == true)
+  publish:
     runs-on:
       - default
 
